@@ -1,0 +1,21 @@
+---
+title: "Ass3- 368036jk-371474ts"
+author: "368036jk and 371474ts"
+date: "4/8/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Q1
+
+
+#Q2
+
+
+#Q3
+
+
+#Q4
