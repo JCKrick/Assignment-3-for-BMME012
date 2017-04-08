@@ -32,3 +32,10 @@ Now, we preprocess the data.First, we add the column names.
 colnames(data) <- c("cultivar","Alcohol","Malic Acid","Ash","Alcalinity of ash","Magnesium","Total phenols","Flavanoids","Nonflavanoid phenols","Proanthocyanins","Color intensity","Hue","OD280/OD315 of diluted wines","Proline")
 ```
 
+Inspect the data
+```
+summary(data)
+str(data)
+colSums(is.na(data))
+```
+There is no missing data and the data seems to be intact.
