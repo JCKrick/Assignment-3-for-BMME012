@@ -24,7 +24,12 @@ First, import the data.
 ```
  data <- read.csv(file = "Data/Assignment3/wine.csv")
  ```
- 
+ Then the working directory is returned and set
+ ```
+getwd()
+setwd(...)
+```
+
 ##Preprocessing
 
 Now, we preprocess the data.First, we add the column names.
@@ -39,3 +44,42 @@ str(data)
 colSums(is.na(data))
 ```
 There is no missing data and the data seems to be intact.
+
+In order to produce good results we need to scale the data.
+```
+data <- scale(data[2:13])
+```
+##Cluster Analysis
+
+Start with 5 clusters
+```
+cluster_model <- kmeans(data,5)
+clusplot(data, cluster_model$cluster, color = TRUE,shade = TRUE,labels = 2,lines=0)
+```
+We see that there is quite some overlap and it hints to 3 or 2 means clustering. 
+
+```
+cluster_model <- kmeans(data,3)
+clusplot(data, cluster_model$cluster, color = TRUE)
+```
+
+This time, it makes sense and there is no substantial overlap. This means that there are three clusters in this dataset.
+
+We then add the clusters value to the original dataset and view the new DataFrame.
+```
+data <- data.frame(data, cluster=as.factor(cluster_model$cluster))
+View(data)
+```
+
+##DecisionTree
+
+To find out what's behind each cluster one must employ a decision tree
+```
+tree<-rpart(cluster ~ Alcohol + Malic.Acid + Ash + Alcalinity.of.ash + Magnesium + Total.phenols + Flavanoids + Nonflavanoid.phenols+Proanthocyanins+Color.intensity+Hue+OD280.OD315.of.diluted.wines, data = data, method = "class",parms = list(split= "information"))
+
+rpart.plot(tree,box.col=c("blue","green","yellow","grey")[tree$frame$yval],extra=4)
+```
+
+Here, we can see that the wine was seperated into three categories according to its Flavanoids and its Color intensity. In Category one there are only wines which have high Flavanoids and have an intense color.
+In Category two there are wines that have low flavanoids and medium color intensity.
+In Category three there are wines that are very low in color intensity and do not depend on Flavanoids.
