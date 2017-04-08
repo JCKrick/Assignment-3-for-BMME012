@@ -16,12 +16,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 #Q3
+First we log into Twitter by using the authentication
+```{r}
+ setup_twitter_oauth(consumer_key = consumer_key,consumer_secret = consumer_secret,access_token = access_token,access_secret = access_token_secret)
+```
 
+Hereafter we collect the Tweets related to Deep Learning.
+```{r}
+
+myTweets <- searchTwitter('#DeepLearning')
+```
 
 #Q4
 
 First, import the data.
-```
+```{r}
  data <- read.csv(file = "Data/Assignment3/wine.csv")
  ```
  Then the working directory is returned and set
@@ -74,7 +83,7 @@ View(data)
 ##DecisionTree
 
 To find out what's behind each cluster one must employ a decision tree
-```
+```{r}
 tree<-rpart(cluster ~ Alcohol + Malic.Acid + Ash + Alcalinity.of.ash + Magnesium + Total.phenols + Flavanoids + Nonflavanoid.phenols+Proanthocyanins+Color.intensity+Hue+OD280.OD315.of.diluted.wines, data = data, method = "class",parms = list(split= "information"))
 
 rpart.plot(tree,box.col=c("blue","green","yellow","grey")[tree$frame$yval],extra=4)
