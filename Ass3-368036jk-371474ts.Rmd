@@ -10,29 +10,153 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #Q1
+Q1A: get the centroid for each cluster
+
+```{r}
+set.seed(1)
+x = cbind(c(1, 1, 0, 5, 6, 4), c(4, 3, 4, 1, 2, 0))
+
+labels = sample(2, nrow(x), replace=T)
+
+centroid1 = c(mean(x[labels==1, 1]), mean(x[labels==1, 2]))
+centroid2 = c(mean(x[labels==2, 1]), mean(x[labels==2, 2]))
+```
+
+Q1B: Assign for each observation to a cluster closest to the observation
+```{r}
+
+euclid = function(a, b) {
+  return(sqrt((a[1] - b[1])^2 + (a[2]-b[2])^2))
+}
+assign_labels = function(x, centroid1, centroid2) {
+  labels = rep(NA, nrow(x))
+  for (i in 1:nrow(x)) {
+    if (euclid(x[i,], centroid1) < euclid(x[i,], centroid2)) {
+      labels[i] = 1
+    } else {
+      labels[i] = 2
+    }
+  }
+  return(labels)
+}
+labels = assign_labels(x, centroid1, centroid2)
+```
+Q1C: repeat the steps until cluster stops changing
+```{r}
+
+last_labels = rep(-1, 6)
+while (!all(last_labels == labels)) {
+  last_labels = labels
+  centroid1 = c(mean(x[labels==1, 1]), mean(x[labels==1, 2]))
+  centroid2 = c(mean(x[labels==2, 1]), mean(x[labels==2, 2]))
+  print(centroid1)
+  print(centroid2)
+  labels = assign_labels(x, centroid1, centroid2)
+}
+```
 
 
 #Q2
+perform a hierachrical clustering on the same date (x):
+
+```{r}
+dist_matrix <- dist(x, method = "euclidean")
+print(dist_matrix)
+
+dendogram <- hclust(dist_matrix)
+
+groups <- cutree(dendogram, k=5)
+
+dist <- dist(groups, method = "euclidean")
+print(dist)
+```
 
 
 #Q3
 First we log into Twitter by using the authentication
 ```{r}
- setup_twitter_oauth(consumer_key = consumer_key,consumer_secret = consumer_secret,access_token = access_token,access_secret = access_token_secret)
+require("twitteR")
+consumer_key <-"2gE9wSUFIse7OdHeFQnBhaVE3"
+consumer_secret <- "KP8BqE7aVqDcDo1A4eJyR9iFGPSQD7efrzWA7n2hDyB3Bp4w8y"
+access_token <-"500773091-44pCm84DjQr05kYisvm4FS5Mrw3vl3RSx6M0HJT2"
+access_secret<-"UTfRMU30evSfRdzJ5drshOgvx4o1n0XqaXIYgA2sQv00J"
+setup_twitter_oauth(consumer_key,consumer_secret,access_token,access_secret)
 ```
 
 Hereafter we collect the Tweets related to Deep Learning.
 ```{r}
+AItweets <- searchTwitter('#DeepLearning OR #machinelearning OR #ai',lang="en",geocode = "51.92,4.48,10km")
 
-myTweets <- searchTwitter('#DeepLearning')
 ```
 
+These tweets are stripped of retweets then and put into a dataframe
+```{r}
+AItweets <- strip_retweets(AItweets)
+AI <- twListToDF(AItweets)
+
+```
+
+Now the data is prepared for the graphical representation of the word count in each tweet in order to analyse the word count.
+
+```{r}
+require("stringr")
+word_count <- str_count(AI$text,"\\S+")
+boxplot(word_count,col = "red")
+```
+
+
+Now we explore some users who tweeted about AI, deep learning and machine learning
+```{r}
+tweetsUser <- getUser("Fueladdicts")
+tweetsUser2 <- getUser("AndreSpeek")
+tweetsUser3 <- getUser("bigdataned")
+```
+First the users are analyzed
+```{r}
+str(tweetsUser)
+str(tweetsUser2)
+str(tweetsUser3)
+
+tweetsUser$getDescription()
+tweetsUser2$getDescription()
+tweetsUser3$getDescription()
+
+tweetsUser$getFollowersCount()
+tweetsUser2$getFollowersCount()
+tweetsUser3$getFollowersCount()
+
+tweetsUser$getLastStatus()
+tweetsUser2$getLastStatus()
+tweetsUser3$getLastStatus()
+```
+
+Now their timelines are analyzed
+```{r}
+tweetsuserTimeline1 <- userTimeline("Fueladdicts")
+tweetsuserTimeline2 <- userTimeline("AndreSpeek")
+tweetsuserTimeline3 <- userTimeline("bigdataned")
+# --- Analyze contents
+str(tweetsuserTimeline1[[5]])
+tweetsuserTimeline1[[5]]$getText()
+
+str(tweetsuserTimeline2[[5]])
+str(tweetsuserTimeline2[[5]]$getText())
+
+str(tweetsuserTimeline3[[5]])
+str(tweetsuserTimeline3[[5]]$getText())
+```
+Finally these are transferred to the Dataframe
+```{r}
+tweetsuserTimeline1 <-twListToDF(tweetsuserTimeline1)
+tweetsuserTimeline2 <-twListToDF(tweetsuserTimeline2)
+tweetsuserTimeline3 <-twListToDF(tweetsuserTimeline3)
+```
 #Q4
 
 First, import the data.
 ```{r}
- data <- read.csv(file = "Data/Assignment3/wine.csv")
- ```
+ data <- read.csv(file = "/Users/jckrick/Documents/BIM/Big_Data_and_Business_Analytics/Data/Assignment3/wine.csv")
+```
  Then the working directory is returned and set
  ```
 getwd()
@@ -42,12 +166,12 @@ setwd(...)
 ##Preprocessing
 
 Now, we preprocess the data.First, we add the column names.
-```
+```{r}
 colnames(data) <- c("cultivar","Alcohol","Malic Acid","Ash","Alcalinity of ash","Magnesium","Total phenols","Flavanoids","Nonflavanoid phenols","Proanthocyanins","Color intensity","Hue","OD280/OD315 of diluted wines","Proline")
 ```
 
 Inspect the data
-```
+```{r}
 summary(data)
 str(data)
 colSums(is.na(data))
@@ -55,19 +179,23 @@ colSums(is.na(data))
 There is no missing data and the data seems to be intact.
 
 In order to produce good results we need to scale the data.
-```
+```{r}
 data <- scale(data[2:13])
 ```
 ##Cluster Analysis
 
 Start with 5 clusters
-```
+```{r}
+require("rpart")
+require("cluster")
+require("rpart.plot")
+require("ape")
 cluster_model <- kmeans(data,5)
 clusplot(data, cluster_model$cluster, color = TRUE,shade = TRUE,labels = 2,lines=0)
 ```
 We see that there is quite some overlap and it hints to 3 or 2 means clustering. 
 
-```
+```{r}
 cluster_model <- kmeans(data,3)
 clusplot(data, cluster_model$cluster, color = TRUE)
 ```
@@ -75,7 +203,7 @@ clusplot(data, cluster_model$cluster, color = TRUE)
 This time, it makes sense and there is no substantial overlap. This means that there are three clusters in this dataset.
 
 We then add the clusters value to the original dataset and view the new DataFrame.
-```
+```{r}
 data <- data.frame(data, cluster=as.factor(cluster_model$cluster))
 View(data)
 ```
